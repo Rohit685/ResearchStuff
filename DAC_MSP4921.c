@@ -49,8 +49,36 @@ has been received and CS raised.
 #define PIN_CS   17
 #define PIN_SCK  18
 #define PIN_MOSI 19
+int high_value = 0;
+int a = 12288; //binary 0011 0000 0000 0000 - set the config bits
+int b = 4095 ; // binary 0000 1111 1111 1111 - set data to high
+int c = 0; // bitwise OR operation betwen config bit and data
+
+void write_data(uint8_t* data) {
+    gpio_put(PIN_CS, 0); // Indicate beginning of communication
+    spi_write_blocking(SPI_PORT, data, 2); // Send data[]
+    gpio_put(PIN_CS, 1); // Signal end of communication
+    sleep_ms(100);
+}
 
 
+bool repeating_timer_callback(struct repeating_timer *t) {
+    high_value = 1 - high_value;
+    if(high_value == 1) {
+        a = 12288;
+        b = 4095;
+    } else {
+        b = 0;
+    }
+    c = a | b;
+    uint8_t data[2]; // Array to store 2 bytes of data to be sent
+    data[0] = (c >> 8) & 0xFF; //least significant 8 bits
+    data[1] =  c & 0xFF;       //most significant 8 bits
+    //uint8_t data[2]; // Array to store data to be sent
+    //data[0] = 0x30 | 0x0F; // Remove first bit to indicate write operation
+    //data[1] = 0xFF; // Data to be sent
+    write_data(data);
+}
 
 int main()
 {
@@ -67,36 +95,35 @@ int main()
     gpio_set_dir(PIN_CS, GPIO_OUT);
     gpio_put(PIN_CS, 1);
     // For more examples of SPI use see https://github.com/raspberrypi/pico-examples/tree/master/spi
+    struct repeating_timer timer;
+    sleep_ms(3000);
+    add_repeating_timer_ms(2000, repeating_timer_callback, NULL, &timer);
 
     while (true) {
-        // Write Operation Example! Set oversampling and power on chip
-        int a = 12288; //binary 0011 0000 0000 0000 - set the config bits
-        int b = 4095 ; // binary 0000 1111 1111 1111 - set data to high
-        int c = a | b; // bitwise OR operation betwen config bit and data
-        uint8_t data[2]; // Array to store 2 bytes of data to be sent
-        data[0] = (c >> 8) & 0xFF; //least significant 8 bits
-        data[1] =  c & 0xFF;       //most significant 8 bits
-
-        //uint8_t data[2]; // Array to store data to be sent
-        //data[0] = 0x30 | 0x0F; // Remove first bit to indicate write operation
-        //data[1] = 0xFF; // Data to be sent
-        gpio_put(PIN_CS, 0); // Indicate beginning of communication
-        spi_write_blocking(SPI_PORT, data, 2); // Send data[]
-        gpio_put(PIN_CS, 1); // Signal end of communication
-        sleep_ms(100);
+    //     // Write Operation Example! Set oversampling and power on chip
+    //     int a = 12288; //binary 0011 0000 0000 0000 - set the config bits
+    //     int b = 4095 ; // binary 0000 1111 1111 1111 - set data to high
+    //     int c = a | b; // bitwise OR operation betwen config bit and data
+    //     uint8_t data[2]; // Array to store 2 bytes of data to be sent
+    //     data[0] = (c >> 8) & 0xFF; //least significant 8 bits
+    //     data[1] =  c & 0xFF;       //most significant 8 bits
+    //     //uint8_t data[2]; // Array to store data to be sent
+    //     //data[0] = 0x30 | 0x0F; // Remove first bit to indicate write operation
+    //     //data[1] = 0xFF; // Data to be sent
+    //     write_data(data);        
         
-        //int a = 12288; //binary 0011 0000 0000 0000 - set the config bits
-        b = 0 ; // binary 0000 0000 0000 0000 - set data to high
-        c = a | b; // bitwise OR operation betwen config bit and data
-        //uint8_t data_1[2]; // Array to store data to be sent
-        data[0] = (c >> 8) & 0xFF; //least significant 8 bits
-        data[1] =  c & 0xFF;       //most significant 8 bits
+    //     //int a = 12288; //binary 0011 0000 0000 0000 - set the config bits
+    //     b = 0 ; // binary 0000 0000 0000 0000 - set data to low
+    //     c = a | b; // bitwise OR operation betwen config bit and data
+    //     //uint8_t data_1[2]; // Array to store data to be sent
+    //     data[0] = (c >> 8) & 0xFF; //least significant 8 bits
+    //     data[1] =  c & 0xFF;       //most significant 8 bits
 
-       // data[0] = 0x30 | 0x00; // Remove first bit to indicate write operation
-       // data[1] = 0x00; // Data to be sent
-        gpio_put(PIN_CS, 0); // Indicate beginning of communication
-        spi_write_blocking(SPI_PORT, data, 2); // Send data[]
-        gpio_put(PIN_CS, 1); // Signal end of communication
-        sleep_ms(100);
+    //    // data[0] = 0x30 | 0x00; // Remove first bit to indicate write operation
+    //    // data[1] = 0x00; // Data to be sent
+    //     write_data(data)
+        tight_loop_contents();
+
+
     }
 }
