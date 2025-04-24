@@ -28,30 +28,30 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(testplswork C CXX ASM)
+project(DACHighLow C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(testplswork testplswork.c )
+add_executable(DACHighLow DACHighLow.c )
 
-pico_set_program_name(testplswork "testplswork")
-pico_set_program_version(testplswork "0.1")
+pico_set_program_name(DACHighLow "DACHighLow")
+pico_set_program_version(DACHighLow "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(testplswork 0)
-pico_enable_stdio_usb(testplswork 1)
+pico_enable_stdio_uart(DACHighLow 0)
+pico_enable_stdio_usb(DACHighLow 1)
 
 # Add the standard library to the build
-target_link_libraries(testplswork
+target_link_libraries(DACHighLow
         pico_stdlib hardware_spi)
 
 # Add the standard include files to the build
-target_include_directories(testplswork PRIVATE
+target_include_directories(DACHighLow PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(testplswork)
+pico_add_extra_outputs(DACHighLow)
 
